@@ -1,6 +1,5 @@
 package com.crokoking.datastore.export.translator;
 
-import com.google.appengine.api.datastore.Entity;
 import com.google.gson.stream.JsonReader;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
@@ -14,6 +13,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class ValidatorMain {
     public static void main(String[] args) {
@@ -52,21 +52,22 @@ public class ValidatorMain {
         try(FileReader fr = new FileReader(inputPath.toFile())) {
             final BufferedReader bufferedReader = new BufferedReader(fr);
             final JsonReader jsonReader = new JsonReader(bufferedReader);
-            jsonReader.beginArray();
-            long validated = 0;
-            final EntityJsonReader entityJsonReader = new EntityJsonReader(jsonReader);
-            while (jsonReader.hasNext()) {
-                final Entity entity = entityJsonReader.deserializeEntity();
-                validated++;
-                if(validated % 1000 == 0) {
-                    System.out.println("Validated " + validated + " entities");
-                }
-            }
-            System.out.println("Validated " + validated + " entities");
-            jsonReader.endArray();
+            runValidation(jsonReader);
         } catch (IOException e) {
             e.printStackTrace(System.err);
         }
+    }
+
+    private static void runValidation(JsonReader jsonReader) throws IOException {
+        final AtomicLong validated = new AtomicLong();
+        final EntityJsonReader entityJsonReader = new EntityJsonReader(jsonReader);
+        entityJsonReader.deserializeEntityArray(entity -> {
+            long cur = validated.incrementAndGet();
+            if (cur % 1000 == 0) {
+                System.out.println("Validated " + cur + " entities");
+            }
+        });
+        System.out.println("Validated " + validated.get() + " entities");
     }
 
     private static void printHelp(Options options) {
