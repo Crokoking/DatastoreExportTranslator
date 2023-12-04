@@ -138,25 +138,31 @@ public class EntityJsonReader {
 
     private void deserializeProperty(PropertyContainer container) throws IOException {
         jsonReader.beginObject();
-        skipToName("key");
-        String key = jsonReader.nextString();
+        String key = null;
+        Object value = null;
         boolean unindexed = false;
         String valueClass = null;
+        boolean foundValue = false;
         while (jsonReader.hasNext()) {
             String name = jsonReader.nextName();
-            if ("unindexed".equals(name)) {
+            if ("key".equals(name)) {
+                key = jsonReader.nextString();
+            } else if ("unindexed".equals(name)) {
                 unindexed = jsonReader.nextBoolean();
             } else if ("class".equals(name)) {
                 valueClass = jsonReader.nextString();
             } else if ("value".equals(name)) {
-                final Object value = deserializeValue(valueClass);
-                setEntityProperty(container, key, unindexed, value);
-                break;
-            } else {
-                throw new IllegalArgumentException("Unknown property " + name);
+                value = deserializeValue(valueClass);
+                foundValue = true;
             }
         }
-        skipToObjectEnd();
+        if (key == null) {
+            throw new IllegalArgumentException("Missing key");
+        }
+        if (!foundValue && valueClass != null && !"null".equals(valueClass)) {
+            throw new IllegalArgumentException("Missing value");
+        }
+        setEntityProperty(container, key, unindexed, value);
         jsonReader.endObject();
     }
 
