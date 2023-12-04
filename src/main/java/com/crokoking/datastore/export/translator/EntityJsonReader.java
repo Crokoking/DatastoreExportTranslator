@@ -83,6 +83,8 @@ public class EntityJsonReader {
                 if (str.startsWith("D")) { //Old format
                     final long longBits = Long.parseLong(str.substring(1), 32);
                     return Double.longBitsToDouble(longBits);
+                } else {
+                    throw new IllegalArgumentException("Unknown double format " + str);
                 }
             }
             final long longBits = jsonReader.nextLong();
