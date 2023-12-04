@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("rawtypes")
@@ -31,6 +32,14 @@ public class EntityJsonWriter {
         jsonWriter.name("properties");
         serializeProperties(entity);
         jsonWriter.endObject();
+    }
+
+    public void serializeEntities(List<Entity> entities) throws IOException {
+        jsonWriter.beginArray();
+        for (Entity entity : entities) {
+            serializeEntity(entity);
+        }
+        jsonWriter.endArray();
     }
 
     public void serializeEmbeddedEntity(EmbeddedEntity entity) throws IOException {
@@ -108,7 +117,7 @@ public class EntityJsonWriter {
             jsonWriter.value(base64);
         } else if (value instanceof GeoPt) {
             float latitude = ((GeoPt) value).getLatitude();
-            float longitude = ((GeoPt) value).getLatitude();
+            float longitude = ((GeoPt) value).getLongitude();
             jsonWriter.beginObject();
             jsonWriter.name("latitude").value(Double.doubleToLongBits(latitude));
             jsonWriter.name("longitude").value(Double.doubleToLongBits(longitude));

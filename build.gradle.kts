@@ -33,6 +33,9 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("com.google.appengine:appengine-api-1.0-sdk:2.0.12")
     implementation("commons-cli:commons-cli:1.6.0")
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
+    testImplementation("com.google.appengine:appengine-testing:2.0.12")
 }
 
 tasks.test {

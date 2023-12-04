@@ -3,6 +3,7 @@ package com.crokoking.datastore.export.translator;
 import com.google.appengine.api.datastore.Blob;
 import com.google.appengine.api.datastore.EmbeddedEntity;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.GeoPt;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.PropertyContainer;
@@ -38,7 +39,6 @@ public class EntityJsonReader {
             }
         }));
         System.out.println("Validated " + read.get() + " entities");
-        jsonReader.endArray();
         return output;
     }
 
@@ -95,6 +95,25 @@ public class EntityJsonReader {
             return new Date(jsonReader.nextLong());
         } else if (Key.class.getSimpleName().equals(valueClass)) {
             return deserializeKey();
+        } else if (GeoPt.class.getSimpleName().equals(valueClass)) {
+            Float latitude = null;
+            Float longitude = null;
+            jsonReader.beginObject();
+            while (jsonReader.hasNext()) {
+                String name = jsonReader.nextName();
+                if ("latitude".equals(name)) {
+                    latitude = (float) Double.longBitsToDouble(jsonReader.nextLong());
+                } else if ("longitude".equals(name)) {
+                    longitude = (float) Double.longBitsToDouble(jsonReader.nextLong());
+                } else {
+                    jsonReader.skipValue();
+                }
+            }
+            jsonReader.endObject();
+            if (latitude == null || longitude == null) {
+                throw new IllegalArgumentException("Missing latitude or longitude");
+            }
+            return new GeoPt(latitude, longitude);
         } else if (EmbeddedEntity.class.getSimpleName().equals(valueClass)) {
             return deserializeEmbeddedEntity();
         } else if (Collection.class.getSimpleName().equals(valueClass)) {
