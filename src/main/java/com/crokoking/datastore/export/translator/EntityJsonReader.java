@@ -8,6 +8,7 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.PropertyContainer;
 import com.google.appengine.api.datastore.Text;
 import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -75,9 +76,15 @@ public class EntityJsonReader {
         } else if (Long.class.getSimpleName().equals(valueClass)) {
             return jsonReader.nextLong();
         } else if (Float.class.getSimpleName().equals(valueClass)) {
-            final long longBits = jsonReader.nextLong();
-            return (float) Double.longBitsToDouble(longBits);
+            return ((Double) deserializeValue(Double.class.getSimpleName())).floatValue();
         } else if (Double.class.getSimpleName().equals(valueClass)) {
+            if (jsonReader.peek() == JsonToken.STRING) {
+                final String str = jsonReader.nextString();
+                if (str.startsWith("D")) { //Old format
+                    final long longBits = Long.parseLong(str.substring(1), 32);
+                    return Double.longBitsToDouble(longBits);
+                }
+            }
             final long longBits = jsonReader.nextLong();
             return Double.longBitsToDouble(longBits);
         } else if (Text.class.getSimpleName().equals(valueClass)) {
@@ -119,12 +126,15 @@ public class EntityJsonReader {
     }
 
     public EmbeddedEntity deserializeEmbeddedEntity() throws IOException {
+        jsonReader.beginObject();
         EmbeddedEntity entity = new EmbeddedEntity();
         skipToName("key");
         Key key = deserializeKey();
         entity.setKey(key);
         skipToName("properties");
         deserializeProperties(entity);
+        skipToObjectEnd();
+        jsonReader.endObject();
         return entity;
     }
 
@@ -154,6 +164,8 @@ public class EntityJsonReader {
             } else if ("value".equals(name)) {
                 value = deserializeValue(valueClass);
                 foundValue = true;
+            } else {
+                jsonReader.skipValue();
             }
         }
         if (key == null) {
@@ -195,6 +207,10 @@ public class EntityJsonReader {
     }
 
     public Key deserializeKey() throws IOException {
+        if (jsonReader.peek() == JsonToken.NULL) {
+            jsonReader.nextNull();
+            return null;
+        }
         jsonReader.beginObject();
         skipToName("keyString");
         String keyString = jsonReader.nextString();
