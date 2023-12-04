@@ -26,52 +26,6 @@ public class EntityJsonReader {
         this.jsonReader = jsonReader;
     }
 
-    public Object deserializeValue(String valueClass) throws IOException {
-        if(valueClass == null || "null".equals(valueClass)) {
-            jsonReader.nextNull();
-            return null;
-        } else if(String.class.getSimpleName().equals(valueClass)) {
-            return jsonReader.nextString();
-        } else if(Boolean.class.getSimpleName().equals(valueClass)) {
-            return jsonReader.nextBoolean();
-        } else if(Integer.class.getSimpleName().equals(valueClass)) {
-            return jsonReader.nextInt();
-        } else if(Long.class.getSimpleName().equals(valueClass)) {
-            return jsonReader.nextLong();
-        } else if(Float.class.getSimpleName().equals(valueClass)) {
-            final long longBits = jsonReader.nextLong();
-            return (float) Double.longBitsToDouble(longBits);
-        } else if(Double.class.getSimpleName().equals(valueClass)) {
-            final long longBits = jsonReader.nextLong();
-            return Double.longBitsToDouble(longBits);
-        } else if(Text.class.getSimpleName().equals(valueClass)) {
-            return new Text(jsonReader.nextString());
-        } else if(Date.class.getSimpleName().equals(valueClass)) {
-            return new Date(jsonReader.nextLong());
-        } else if(Key.class.getSimpleName().equals(valueClass)) {
-            return deserializeKey();
-        } else if(EmbeddedEntity.class.getSimpleName().equals(valueClass)) {
-            return deserializeEmbeddedEntity();
-        } else if(Collection.class.getSimpleName().equals(valueClass)) {
-            return deserializeCollection();
-        } else if(Blob.class.getSimpleName().equals(valueClass)) {
-            return new Blob(Base64.getUrlDecoder().decode(jsonReader.nextString()));
-        } else {
-            throw new IllegalArgumentException("Cannot deserialize class " + valueClass);
-        }
-    }
-
-    public Object deserializeCollection() throws IOException {
-        List<Object> result = new ArrayList<>();
-        jsonReader.beginArray();
-        while (jsonReader.hasNext()) {
-            Object deserialized = deserializePropertyValue();
-            result.add(deserialized);
-        }
-        jsonReader.endArray();
-        return result;
-    }
-
     public List<Entity> deserializeEntityArray() throws IOException {
         List<Entity> output = new ArrayList<>();
         final AtomicLong read = new AtomicLong();
@@ -106,6 +60,52 @@ public class EntityJsonReader {
         deserializeProperties(entity);
         jsonReader.endObject();
         return entity;
+    }
+
+    public Object deserializeValue(String valueClass) throws IOException {
+        if (valueClass == null || "null".equals(valueClass)) {
+            jsonReader.nextNull();
+            return null;
+        } else if (String.class.getSimpleName().equals(valueClass)) {
+            return jsonReader.nextString();
+        } else if (Boolean.class.getSimpleName().equals(valueClass)) {
+            return jsonReader.nextBoolean();
+        } else if (Integer.class.getSimpleName().equals(valueClass)) {
+            return jsonReader.nextInt();
+        } else if (Long.class.getSimpleName().equals(valueClass)) {
+            return jsonReader.nextLong();
+        } else if (Float.class.getSimpleName().equals(valueClass)) {
+            final long longBits = jsonReader.nextLong();
+            return (float) Double.longBitsToDouble(longBits);
+        } else if (Double.class.getSimpleName().equals(valueClass)) {
+            final long longBits = jsonReader.nextLong();
+            return Double.longBitsToDouble(longBits);
+        } else if (Text.class.getSimpleName().equals(valueClass)) {
+            return new Text(jsonReader.nextString());
+        } else if (Date.class.getSimpleName().equals(valueClass)) {
+            return new Date(jsonReader.nextLong());
+        } else if (Key.class.getSimpleName().equals(valueClass)) {
+            return deserializeKey();
+        } else if (EmbeddedEntity.class.getSimpleName().equals(valueClass)) {
+            return deserializeEmbeddedEntity();
+        } else if (Collection.class.getSimpleName().equals(valueClass)) {
+            return deserializeCollection();
+        } else if (Blob.class.getSimpleName().equals(valueClass)) {
+            return new Blob(Base64.getUrlDecoder().decode(jsonReader.nextString()));
+        } else {
+            throw new IllegalArgumentException("Cannot deserialize class " + valueClass);
+        }
+    }
+
+    public Object deserializeCollection() throws IOException {
+        List<Object> result = new ArrayList<>();
+        jsonReader.beginArray();
+        while (jsonReader.hasNext()) {
+            Object deserialized = deserializePropertyValue();
+            result.add(deserialized);
+        }
+        jsonReader.endArray();
+        return result;
     }
 
     private void skipToName(String name) throws IOException {

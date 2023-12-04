@@ -13,6 +13,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class ValidatorMain {
@@ -39,7 +40,7 @@ public class ValidatorMain {
         }
 
         final String inputPathString = commandLine.getOptionValue(input);
-        final Path inputPath = Path.of(inputPathString);
+        final Path inputPath = Paths.get(inputPathString);
         if (!Files.exists(inputPath)) {
             System.err.println("Input directory does not exist: " + inputPathString);
             return;

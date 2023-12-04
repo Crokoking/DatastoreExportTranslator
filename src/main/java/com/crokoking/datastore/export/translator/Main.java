@@ -10,6 +10,7 @@ import org.apache.commons.cli.ParseException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -44,7 +45,7 @@ public class Main {
         }
 
         final String inputPathString = commandLine.getOptionValue(input);
-        final Path inputPath = Path.of(inputPathString);
+        final Path inputPath = Paths.get(inputPathString);
         if (!Files.exists(inputPath)) {
             System.err.println("Input directory does not exist: " + inputPathString);
             return;
@@ -54,7 +55,7 @@ public class Main {
             return;
         }
         final String outputFileString = commandLine.getOptionValue(output);
-        final Path outputPath = Path.of(outputFileString);
+        final Path outputPath = Paths.get(outputFileString);
         if (Files.exists(outputPath) && !Files.isRegularFile(outputPath)) {
             System.err.println("Output file is not a file: " + outputFileString);
             return;
