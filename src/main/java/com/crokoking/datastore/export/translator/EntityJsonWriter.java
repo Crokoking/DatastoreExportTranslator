@@ -134,6 +134,7 @@ public class EntityJsonWriter {
         }
         jsonWriter.beginObject();
         jsonWriter.name("keyString").value(KeyFactory.keyToString(key));
+        jsonWriter.name("namespace").value(key.getNamespace());
         jsonWriter.name("kind").value(key.getKind());
         if (key.getName() != null) {
             jsonWriter.name("name").value(key.getName());
