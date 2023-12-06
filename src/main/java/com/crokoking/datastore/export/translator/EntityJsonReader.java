@@ -236,9 +236,23 @@ public class EntityJsonReader {
         skipToName("keyString");
         String keyString = jsonReader.nextString();
         Key key = KeyFactory.stringToKey(keyString);
+        Key fixedKey = fixKey(key);
         skipToObjectEnd();
         jsonReader.endObject();
-        return key;
+        return fixedKey;
+    }
+
+    //This should fix issues with non-matching namespaces
+    private Key fixKey(Key key) {
+        if (key == null) {
+            return null;
+        }
+        Key parent = fixKey(key.getParent());
+        if (key.getName() != null) {
+            return KeyFactory.createKey(parent, key.getKind(), key.getName());
+        } else {
+            return KeyFactory.createKey(parent, key.getKind(), key.getId());
+        }
     }
 
     private void skipToObjectEnd() throws IOException {
